@@ -103,7 +103,7 @@ resource "aws_iam_role_policy_attachment" "canary-policy-attachment" {
 
 module "canary_lambda_zip" {
   source = "./modules/lambda_zip"
-  source_dir_path = "canary"
+  source_dir_path = "node_modules"
   zip_filename = "canaryLambda.zip"
 }
 
