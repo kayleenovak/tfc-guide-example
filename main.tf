@@ -2,6 +2,53 @@ provider "aws" {
   region = var.region
 }
 
+
+# ________________________________________S3 Bucket___________________________________
+
+resource "aws_s3_bucket" "example-canaries" {
+  bucket = "example-canaries"
+  acl = "private"
+
+  versioning {
+    enabled = true
+  }
+
+  lifecycle_rule {
+    enabled = true
+
+    noncurrent_version_expiration {
+      days = 60
+    }
+  }
+
+  tags = {
+    Name = "example-canaries"
+    Application = "example-xctf"
+    Environment = "all"
+  }
+}
+
+resource "aws_s3_bucket_policy" "example-canaries-policy" {
+  bucket = aws_s3_bucket.example-canaries.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Id = "ExampleCanariesPolicy"
+    Statement = [
+      {
+        Sid = "Permissions"
+        Effect = "Allow"
+        Principal = {
+          AWS = data.aws_caller_identity.current.account_id
+        }
+        Action = ["s3:*"]
+        Resource = ["${aws_s3_bucket.example-canaries.arn}/*"]
+      }
+    ]
+  })
+}
+
+
+
 # ________________________________________CANARY IAM ROLE___________________________________
 
 data "aws_iam_policy_document" "canary-assume-role-policy" {
