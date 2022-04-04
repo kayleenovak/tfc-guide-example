@@ -15,7 +15,7 @@ data "aws_sns_topic" "alert-email" {
 }
 
 module "canary_lambda_zip" {
-  source = "../modules/lambda_zip"
+  source = "./modules/lambda_zip"
   source_dir_path = "canary"
   zip_filename = "canaryLambda.zip"
 }
