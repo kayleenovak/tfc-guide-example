@@ -29,7 +29,7 @@ resource "aws_synthetics_canary" "example" {
   zip_file = "${module.canary_lambda_zip.lambda_zip}"
   start_canary = true
 
-  success_retention_period = 0
+  success_retention_period = 1
   failure_retention_period = 1
 
   schedule {
