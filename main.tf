@@ -107,9 +107,3 @@ resource "aws_cloudwatch_event_rule" "example-canary-event-rule" {
     }
   })
 }
-
-resource "aws_cloudwatch_event_target" "example-canary-event-target" {
-  target_id = "ExampleTarget"
-  arn = data.aws_sns_topic.alert-email.arn
-  rule = aws_cloudwatch_event_rule.example-canary-event-rule.name
-}
