@@ -113,7 +113,7 @@ resource "aws_synthetics_canary" "example" {
   execution_role_arn = resource.aws_iam_role.canary-role.arn
   runtime_version = "syn-nodejs-puppeteer-3.1"
   handler = "canary.handler"
-  zip_file = "${module.canary_lambda_zip.lambda_zip}"
+  zip_file = "${module.canary_lambda_zip.output_path}"
   start_canary = true
 
   success_retention_period = 1
