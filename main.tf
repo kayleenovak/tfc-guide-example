@@ -52,15 +52,6 @@ resource "aws_iam_role_policy_attachment" "canary-policy-attachment" {
   policy_arn = aws_iam_policy.canary-policy.arn
 }
 
-
-data "aws_s3_bucket" "example-canaries" {
-  bucket = "example-canaries"
-}
-
-data "aws_iam_role" "canary-role" {
-  name = "canary-role"
-}
-
 module "canary_lambda_zip" {
   source = "./modules/lambda_zip"
   source_dir_path = "canary"
@@ -69,8 +60,8 @@ module "canary_lambda_zip" {
 
 resource "aws_synthetics_canary" "example" {
   name = "example"
-  artifact_s3_location = "s3://${data.aws_s3_bucket.example-canaries.id}/"
-  execution_role_arn = data.aws_iam_role.canary-role.arn
+  artifact_s3_location = "s3://${resource.aws_s3_bucket.example-canaries.id}/"
+  execution_role_arn = resource.aws_iam_role.canary-role.arn
   runtime_version = "syn-nodejs-puppeteer-3.1"
   handler = "canary.handler"
   zip_file = "${module.canary_lambda_zip.lambda_zip}"
