@@ -45,7 +45,7 @@ resource "aws_synthetics_canary" "example" {
 
   tags = {
     Name = "example"
-    Environment = local.environment
+    Environment = "Test"
     Application = "example"
   }
 }
