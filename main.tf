@@ -2,16 +2,63 @@ provider "aws" {
   region = var.region
 }
 
+# ________________________________________CANARY IAM ROLE___________________________________
+
+data "aws_iam_policy_document" "canary-assume-role-policy" {
+  statement {
+    actions = ["sts:AssumeRole"]
+    effect = "Allow"
+
+    principals {
+      identifiers = ["lambda.amazonaws.com"]
+      type = "Service"
+    }
+  }
+}
+
+resource "aws_iam_role" "canary-role" {
+  name = "canary-role"
+  path = "/example/"
+  assume_role_policy = data.aws_iam_policy_document.canary-assume-role-policy.json
+  description = "IAM role for AWS Synthetic Monitoring Canaries"
+}
+
+data "aws_iam_policy_document" "canary-policy" {
+  statement {
+    sid = "CanaryGeneric"
+    effect = "Allow"
+    actions = [
+      "s3:PutObject",
+      "s3:GetBucketLocation",
+      "s3:ListAllMyBuckets",
+      "cloudwatch:PutMetricData",
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "canary-policy" {
+  name = "canary-policy"
+  path = "/saints-xctf-com/"
+  policy = data.aws_iam_policy_document.canary-policy.json
+  description = "IAM role for AWS Synthetic Monitoring Canaries"
+}
+
+resource "aws_iam_role_policy_attachment" "canary-policy-attachment" {
+  role = aws_iam_role.canary-role.name
+  policy_arn = aws_iam_policy.canary-policy.arn
+}
+
+
 data "aws_s3_bucket" "example-canaries" {
   bucket = "example-canaries"
 }
 
 data "aws_iam_role" "canary-role" {
   name = "canary-role"
-}
-
-data "aws_sns_topic" "alert-email" {
-  name = "alert-email-topic"
 }
 
 module "canary_lambda_zip" {
@@ -65,54 +112,4 @@ resource "aws_cloudwatch_event_target" "example-canary-event-target" {
   target_id = "ExampleTarget"
   arn = data.aws_sns_topic.alert-email.arn
   rule = aws_cloudwatch_event_rule.example-canary-event-rule.name
-}
-
-# ________________________________________CANARY IAM ROLE___________________________________
-
-data "aws_iam_policy_document" "canary-assume-role-policy" {
-  statement {
-    actions = ["sts:AssumeRole"]
-    effect = "Allow"
-
-    principals {
-      identifiers = ["lambda.amazonaws.com"]
-      type = "Service"
-    }
-  }
-}
-
-resource "aws_iam_role" "canary-role" {
-  name = "canary-role"
-  path = "/example/"
-  assume_role_policy = data.aws_iam_policy_document.canary-assume-role-policy.json
-  description = "IAM role for AWS Synthetic Monitoring Canaries"
-}
-
-data "aws_iam_policy_document" "canary-policy" {
-  statement {
-    sid = "CanaryGeneric"
-    effect = "Allow"
-    actions = [
-      "s3:PutObject",
-      "s3:GetBucketLocation",
-      "s3:ListAllMyBuckets",
-      "cloudwatch:PutMetricData",
-      "logs:CreateLogGroup",
-      "logs:CreateLogStream",
-      "logs:PutLogEvents"
-    ]
-    resources = ["*"]
-  }
-}
-
-resource "aws_iam_policy" "canary-policy" {
-  name = "canary-policy"
-  path = "/saints-xctf-com/"
-  policy = data.aws_iam_policy_document.canary-policy.json
-  description = "IAM role for AWS Synthetic Monitoring Canaries"
-}
-
-resource "aws_iam_role_policy_attachment" "canary-policy-attachment" {
-  role = aws_iam_role.canary-role.name
-  policy_arn = aws_iam_policy.canary-policy.arn
 }
